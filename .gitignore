@@ -1,0 +1,56 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.*
+
+# Docker
+*.tar
+*.img
+docker-compose.override.yml
+
+terraform
+
+# Terraform
+terraform/Stage1/.terraform/
+terraform/Stage1/terraform.tfstate
+terraform/Stage1/terraform.tfstate.*
+terraform/Stage1/.terraform.lock.hcl
+terraform/Stage1/crash.log
+terraform/Stage1/override.tf
+terraform/Stage1/override.tf.json
+terraform/Stage1/*.tfplan
+terraform/Stage1/*.tfvars
+
+
+
+
+# Terraform, alb part
+terraform/Stage2/.terraform/
+terraform/Stage2/terraform.tfstate
+terraform/Stage2/terraform.tfstate.*
+terraform/Stage2/.terraform.lock.hcl
+terraform/Stage2/crash.log
+terraform/Stage2/override.tf
+terraform/Stage2/override.tf.json
+terraform/Stage2/*.tfplan
+terraform/Stage2/*.tfvars
+
+
+
+# VS Code
+.vscode/
+
+# GitHub Actions runtime logs (optional)
+*.log
+logs 
+
+# EKS generated kubeconfig (optional)
+kubeconfig
+
+.terraform/
+*.exe

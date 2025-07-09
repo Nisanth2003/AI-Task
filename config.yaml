@@ -1,0 +1,67 @@
+# EKS AI Automation Pipeline Configuration
+
+# AI Provider Configuration
+ai_provider: "gemini"  # Options: "openai", "gemini"
+
+# Gemini Configuration
+gemini:
+  model: "gemini-1.5-flash"  # or "gemini-1.5-pro"
+  max_tokens: 2000
+  temperature: 0.3
+
+# OpenAI Configuration (if using OpenAI)
+openai:
+  model: "gpt-4o-mini"  # Updated model name
+  max_tokens: 2000
+  temperature: 0.3
+
+# AWS Configuration
+aws:
+  region: "us-east-1"
+  account_id: "123456789012"  # Replace with your AWS account ID
+
+# EKS Configuration
+eks:
+  cluster_name: "eks-ai-cluster"
+  kubernetes_version: "1.28"
+  node_group:
+    instance_types: ["t3.medium", "t3.large"]
+    desired_capacity: 2
+    min_size: 1
+    max_size: 4
+    disk_size: 20
+
+# ECR Configuration
+ecr:
+  repository_name: "sample-node-app"
+  image_tag_mutability: "MUTABLE"
+  scan_on_push: true
+
+# GitHub Configuration
+github:
+  repository: "https://github.com/acemilyalcin/sample-node-project"
+  branch: "main"
+
+# Application Configuration
+application:
+  name: "sample-node-app"
+  port: 3000
+  replicas: 2
+  health_check_path: "/health"
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  file: "logs/eks_automation.log"
+  console: true
+
+# Generation Settings
+generation:
+  terraform:
+    validate_syntax: true
+    format_code: true
+  kubernetes:
+    validate_yaml: true
+  dockerfile:
+    multi_stage: true
+    security_scanning: true
