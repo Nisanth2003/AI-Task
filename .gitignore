@@ -13,7 +13,9 @@ yarn-error.log*
 *.img
 docker-compose.override.yml
 
-terraform
+.terraform/
+.logs/
+*.exe
 
 # Terraform
 terraform/Stage1/.terraform/
@@ -52,5 +54,3 @@ logs
 # EKS generated kubeconfig (optional)
 kubeconfig
 
-.terraform/
-*.exe

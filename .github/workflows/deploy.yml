@@ -29,12 +29,13 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, and push image to Amazon ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      - name: Build, tag, and push Docker image
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          IMAGE_TAG=${GITHUB_SHA::7}
+          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/nisanth:$IMAGE_TAG
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
 
       - name: Configure kubectl
         run: |
@@ -66,6 +67,7 @@ jobs:
 
       - name: Apply Kubernetes manifests
         run: |
+          sed -i "s|<your_ecr_uri>|${{ env.IMAGE_URI }}|" deployment.yaml
           kubectl apply -f deployment.yaml
           kubectl apply -f service.yaml
           kubectl apply -f ingress.yaml
