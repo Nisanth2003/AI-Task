@@ -5,9 +5,6 @@ on:
     branches:
       - main
 
-env:
-  ECR_REPOSITORY: your-ecr-repo-name
-  IMAGE_TAG: latest
 
 jobs:
   build-and-deploy:
@@ -27,8 +24,8 @@ jobs:
 
       - name: Ensure ECR repository exists
         run: |
-          aws ecr describe-repositories --repository-names nisanth || \
-          aws ecr create-repository --repository-name nisanth
+          aws ecr describe-repositories --repository-names ${{ secrets.ECR_REPOSITORY }} || \
+          aws ecr create-repository --repository-name ${{ secrets.ECR_REPOSITORY }}
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -37,43 +34,20 @@ jobs:
       - name: Build, tag, and push Docker image
         run: |
           IMAGE_TAG=${GITHUB_SHA::7}
-          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/nisanth:$IMAGE_TAG
+          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
 
-      - name: Configure kubectl
-        run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
-          kubectl cluster-info
 
-      - name: Install Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: v3.13.2
+      - name: Setting up KUBECTL
+        uses: azure/setup-kubectl@v3
 
-      - name: Install Prometheus and Grafana with Helm
-        run: |
-          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-          helm repo add grafana https://grafana.github.io/helm-charts
-          helm repo update
-          
-          helm upgrade --install prometheus prometheus-community/prometheus \
-            --namespace monitoring \
-            --create-namespace \
-            --wait \
-            --timeout 10m
-
-          helm upgrade --install grafana grafana/grafana \
-            --namespace monitoring \
-            --set service.type=LoadBalancer \
-            --wait \
-            --timeout 5m
+ 
 
       - name: Apply Kubernetes manifests
         run: |
+          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name eks-cluster 
           sed -i "s|<your_ecr_uri>|${{ env.IMAGE_URI }}|" deployment.yaml
           kubectl apply -f deployment.yaml
           kubectl apply -f service.yaml

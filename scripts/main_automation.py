@@ -159,13 +159,13 @@ class EKSAutomationPipeline:
             Return ONLY the complete Terraform code, no explanations or comments outside the code.
             """
         
-            # response = self._call_gemini_api(prompt1)
-            # terraform_content = self._extract_terraform_code(response)
+            response = self._call_gemini_api(prompt1)
+            terraform_content = self._extract_terraform_code(response)
         
-            # # Save to main.tf file
-            # terraform_file = "terraform/main.tf"
-            # with open(terraform_file, 'w') as f:
-            #     f.write(terraform_content)
+            # Save to main.tf file
+            terraform_file = "terraform/Stage1/main.tf"
+            with open(terraform_file, 'w') as f:
+                f.write(terraform_content)
     
             #stage_2
             prompt2 = f"""
@@ -200,7 +200,7 @@ class EKSAutomationPipeline:
             terraform_content = self._extract_terraform_code(response)
         
             # Save to main.tf file
-            terraform_file = "terraform/alb_main.tf"
+            terraform_file = "terraform/Stage2/main.tf"
             with open(terraform_file, 'w') as f:
                 f.write(terraform_content)
     
@@ -252,7 +252,7 @@ class EKSAutomationPipeline:
             variables_content = self._extract_terraform_code(response)
             
             # Save to variables.tf file
-            variables_file = "terraform/variables.tf"
+            variables_file = "terraform/Stage1/variables.tf"
             with open(variables_file, 'w') as f:
                 f.write(variables_content)
             
@@ -328,7 +328,7 @@ class EKSAutomationPipeline:
             
             # Save manifests to files
             for name, content in manifests.items():
-                file_path = f"k8s/{name}.yaml"
+                file_path = f"{name}.yaml"
                 with open(file_path, 'w') as f:
                     f.write(content)
                 self.logger.info(f"Generated Kubernetes manifest: {file_path}")
@@ -376,19 +376,19 @@ class EKSAutomationPipeline:
                 
                 1. Builds a Docker image from the project root
                 2. Tags and pushes it to AWS ECR
-                3. Configures kubectl using a base64 KUBECONFIG from secrets
-                4. Installs Helm
-                5. Installs Prometheus and Grafana using Helm into the `monitoring` namespace:
-                - Prometheus from `prometheus-community/prometheus`
-                - Grafana from `grafana/grafana`
-                - Use `LoadBalancer` service type for Grafana
+                3.setup kubectl and configure it  
+                # 3. Configures kubectl using a base64 KUBECONFIG from secrets
+                # 4. Installs Helm
+                # 5. Installs Prometheus and Grafana using Helm into the `monitoring` namespace:
+                # - Prometheus from `prometheus-community/prometheus`
+                # - Grafana from `grafana/grafana`
+                # - Use `LoadBalancer` service type for Grafana
                 6. Applies `deployment.yaml`, `service.yaml`, and `ingress.yaml` using kubectl
                 
                 Environment details:
                 - Use `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` , `AWS_ACCOUNT_ID` from GitHub secrets
                 - `ECR_REPOSITORY` is the target ECR repo name
-                - Docker image tag should be `latest`
-                - Use `KUBE_CONFIG_DATA` secret to configure kubectl
+                # - Use `KUBE_CONFIG_DATA` secret to configure kubectl
                 
                 Respond with only the content of `.github/workflows/deploy.yml`. No markdown or explanation.
             """
@@ -548,13 +548,13 @@ class EKSAutomationPipeline:
         try:
             self.logger.info("Starting full automation pipeline")
             
-            # # Generate single complete Terraform main.tf
-            # self.logger.info("Generating complete Terraform main.tf")
-            # self.generate_complete_terraform_main()
+            # Generate single complete Terraform main.tf
+            self.logger.info("Generating complete Terraform main.tf")
+            self.generate_complete_terraform_main()
             
-            # # Generate Terraform variables and outputs
-            # self.logger.info("Generating Terraform variables.tf")
-            # self.generate_terraform_variables()
+            # Generate Terraform variables and outputs
+            self.logger.info("Generating Terraform variables.tf")
+            self.generate_terraform_variables()
             
 
             # Generate Kubernetes manifests
@@ -587,10 +587,12 @@ class EKSAutomationPipeline:
         print("="*60)
         print("\nGenerated Files:")
         print("📁 terraform/")
-        print("   ├── main.tf         (Complete infrastructure)")
-        print("   ├── variables.tf    (Input variables)")
-        print("   └── outputs.tf      (Output values)")
-        print("\n📁 k8s/")
+        print("   ├── Stage1/")
+        print("       ├── main.tf         (Complete infrastructure)")
+        print("       └── variables.tf    (Input variables)")
+        print("   └── Stage2/")
+        print("       └── main.tf         (ALB Controller setup)")
+        print("\n")
         print("   ├── deployment.yaml (Application deployment)")
         print("   ├── service.yaml    (Service configuration)")
         print("   └── ingress.yaml    (Ingress configuration)")
@@ -599,7 +601,7 @@ class EKSAutomationPipeline:
         print("\n📁 scripts/")
         print("   ├── setup.sh        (Environment setup)")
         print("   └── deploy.sh       (Application deployment)")
-        print("\n📁 sample-node-project/")
+        print("\n")
         print("   └── Dockerfile      (Container configuration)")
         print("\n" + "="*60)
         print("Next Steps:")
